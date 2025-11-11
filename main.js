@@ -1,141 +1,116 @@
 //TODO add imports if needed
-//import { exMain } from "./exclude/exampleAss2.js"
-
-//TODO add/change doc as needed
+// This implementation follows the algorithm created for the homework assignment
+// No use of .toString(base) or parseInt(number, base) for the whole number
 
 /**
- * Converts the given number from input base to output base.
- * Does NOT use toString(base) or parseInt(number, base) for whole numbers.
- * Uses custom helper functions for digit conversion.
- *
- * @param {string} inputNumber - number that is being converted (string)
- * @param {number} inputNumberSystem - base of input number (2, 10, 32)
- * @param {number} outputNumberSystem - target base (2, 10, 32)
- * @returns {string} converted number in output base
+ * Converts a number from one numeral system to another
+ * @param {string} inputNumber - number as string in source system
+ * @param {number} inputNumberSystem - base of input number
+ * @param {number} outputNumberSystem - base to convert to
+ * @returns {string} - converted number in output system
  */
 export function main(inputNumber, inputNumberSystem, outputNumberSystem) {
-
-  validateBases(inputNumberSystem, outputNumberSystem);
-  validateDigits(inputNumber, inputNumberSystem);
-
-  // Step 1 → convert FROM input base → TO decimal
-  const decimalValue = convertToDecimal(inputNumber, inputNumberSystem);
-
-  // Step 2 → convert FROM decimal → TO output base
-  const result = convertFromDecimal(decimalValue, outputNumberSystem);
-
-  return result;
-}
-
-/**
- * Defines which bases are permitted as input.
- * @returns {Array<number>}
- */
-export function permittedInputSystems() {
-  return [2, 10, 32];
-}
-
-/**
- * Defines which bases are permitted as output.
- * @returns {Array<number>}
- */
-export function permittedOutputSystems() {
-  return [2, 10, 32];
-}
-
-/* ──────────────────────────────────────────────── */
-/*                    CORE LOGIC                    */
-/* ──────────────────────────────────────────────── */
-
-/**
- * Converts any number (string) in base N → decimal (number)
- * WITHOUT using parseInt(fullNumber, base)
- */
-function convertToDecimal(str, base) {
-  let result = 0;
-
-  for (let i = 0; i < str.length; i++) {
-    const digitValue = charToValue(str[i]); // our own helper
-    result = result * base + digitValue;
-  }
-
-  return result;
-}
-
-/**
- * Converts a decimal number → string in target base
- * WITHOUT using number.toString(base)
- */
-function convertFromDecimal(number, base) {
-  if (number === 0) return "0";
-
-  let output = "";
-
-  while (number > 0) {
-    const remainder = number % base;
-    output = valueToChar(remainder) + output; // our helper converts digit→char
-    number = Math.floor(number / base);
-  }
-
-  return output;
-}
-
-/* ──────────────────────────────────────────────── */
-/*                VALIDATION HELPERS                */
-/* ──────────────────────────────────────────────── */
-
-function validateBases(inputBase, outputBase) {
-  if (!permittedInputSystems().includes(inputBase)) {
-    throw new Error("Input base not permitted.");
-  }
-  if (!permittedOutputSystems().includes(outputBase)) {
-    throw new Error("Output base not permitted.");
-  }
-}
-
-function validateDigits(str, base) {
-  for (let ch of str) {
-    const value = charToValue(ch);
-    if (value >= base) {
-      throw new Error("Invalid digit for given input base.");
+  // Step 1: Validate input digits
+  for (let i = 0; i < inputNumber.length; i++) {
+    const digitValue = charToNumber(inputNumber[i]);
+    if (digitValue >= inputNumberSystem) {
+      throw new Error("Invalid digits for source base");
     }
   }
+
+  // Step 2: Check that source and target bases are not the same
+  if (inputNumberSystem === outputNumberSystem) {
+    throw new Error("Conversion to the same base is not allowed");
+  }
+
+  // Step 3: Convert input number to decimal (only if needed)
+  let decimalNumber;
+  if (inputNumberSystem !== 10) {
+    decimalNumber = convertToDecimal(inputNumber, inputNumberSystem);
+  } else {
+    decimalNumber = Number(inputNumber); // input is decimal
+  }
+
+  // Step 4: Handle zero case
+  if (decimalNumber === 0) {
+    return "0";
+  }
+
+  // Step 5: Convert decimal number to target base
+  let resultNumber = "";
+  if (outputNumberSystem !== 10) {
+    while (decimalNumber > 0) {
+      const remainder = decimalNumber % outputNumberSystem;
+      const remainderChar = numberToChar(remainder);
+      resultNumber = remainderChar + resultNumber;
+      decimalNumber = Math.floor(decimalNumber / outputNumberSystem);
+    }
+  } else {
+    resultNumber = decimalNumber.toString(); // decimal output
+  }
+
+  return resultNumber;
 }
 
-/* ──────────────────────────────────────────────── */
-/*              DIGIT CONVERSION HELPERS            */
-/*  These are simple helpers for single characters  */
-/*  They DO NOT replace parseInt() for whole input  */
-/*  They only work on ONE DIGIT as allowed in task  */
-/* ──────────────────────────────────────────────── */
-
 /**
- * Converts a single character into its numeric value.
- * This is similar to parseInt(char, base) ONLY for individual digits,
- * but it does NOT convert whole numbers.
+ * Permitted input numeral systems.
  */
-function charToValue(char) {
-  // 0–9
-  if (char >= "0" && char <= "9") {
-    return char.charCodeAt(0) - "0".charCodeAt(0);
-  }
-
-  // A–Z → values 10–35 (needed for base 32)
-  if (char >= "A" && char <= "Z") {
-    return char.charCodeAt(0) - "A".charCodeAt(0) + 10;
-  }
-
-  throw new Error("Invalid character.");
+export function permittedInputSystems() {
+  return [2,3,4,5,6,7,8,9,10,11,12,16,32];
 }
 
 /**
- * Converts a numeric value (0–35) back into a single character digit.
- * Reverse of charToValue().
+ * Permitted output numeral systems.
  */
-function valueToChar(value) {
-  if (value < 10) {
-    return String.fromCharCode("0".charCodeAt(0) + value);
-  }
+export function permittedOutputSystems() {
+  return [2,3,4,5,6,7,8,9,10,11,12,16,32];
+}
 
-  return String.fromCharCode("A".charCodeAt(0) + (value - 10));
+/* ---------------- Helper Functions ---------------- */
+
+/**
+ * Converts a single character to its numeric value.
+ * Works for '0'-'9' and 'A'-'V' for bases up to 32.
+ * @param {string} char
+ * @returns {number}
+ */
+function charToNumber(char) {
+  const upperChar = char.toUpperCase();
+  if (upperChar >= "0" && upperChar <= "9") {
+    return upperChar.charCodeAt(0) - "0".charCodeAt(0);
+  } else if (upperChar >= "A" && upperChar <= "V") { // A=10, B=11, ..., V=31
+    return upperChar.charCodeAt(0) - "A".charCodeAt(0) + 10;
+  } else {
+    throw new Error("Invalid character: " + char);
+  }
+}
+
+/**
+ * Converts a number to its character representation.
+ * @param {number} num
+ * @returns {string}
+ */
+function numberToChar(num) {
+  if (num >= 0 && num <= 9) {
+    return String.fromCharCode("0".charCodeAt(0) + num);
+  } else if (num >= 10 && num <= 31) {
+    return String.fromCharCode("A".charCodeAt(0) + num - 10);
+  } else {
+    throw new Error("Invalid number for conversion to character: " + num);
+  }
+}
+
+/**
+ * Converts a number string from source base to decimal
+ * @param {string} numberStr
+ * @param {number} sourceBase
+ * @returns {number}
+ */
+function convertToDecimal(numberStr, sourceBase) {
+  let decimalValue = 0;
+  for (let i = 0; i < numberStr.length; i++) {
+    const digitValue = charToNumber(numberStr[i]);
+    decimalValue = decimalValue * sourceBase + digitValue;
+  }
+  return decimalValue;
 }
