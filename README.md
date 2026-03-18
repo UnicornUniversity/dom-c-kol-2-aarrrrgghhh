@@ -8,6 +8,7 @@ Zadání úkolu je [zde](https://uuapp.plus4u.net/uu-managementkit-maing02/38744
 
 **Poznámky k úkolu:**
 - Můžete zvolit konverzi mezi libovolnými 2 číselnými soustavami, jen nesmí být totožné (např. není povoleno z binární do binární, protože v takovém případě k převodu fakticky nedochází).
+- Kvůli použití automatických testů je možné implementovat pouze konverzi mezi číselnými soustavami používající poziční systém (včetně nuly, jak definováno Brahmaguptou 628 AD - tzn. třeba římské nebo babylonské číslice vám neprojdou). Navíc současné automatické testy omezují čiselné soustavy na základ 2-36 (v budoucnu možná rozšířím).
 - Můžete povolit konverzi více různých soustav, ale není to nutné. Pokud bude chyba jen v některém z převodů, budu hodnotit ten z převodů, který je dobře. Jinak k tomu ovšem nebude přihlíženo.
 - **JE ZAKÁZÁNO POUŽÍVAT FUNKCE, KTERÉ KONVERZI ČÍSELNÝCH SOUSTAV ŘEŠÍ ZA VÁS!**
   - Jmenovitě jde o _Number.parseInt(number, numberSystem)_ a _.toString(numberSystem)_.
